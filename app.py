@@ -10,7 +10,7 @@ DB_CONFIG = {
     'host': 'switchback.proxy.rlwy.net',
     'port': 42048,
     'user': 'root',
-    'password': 'SLFGZoiMCSwMtoUzgvnLFHneBRiEqfxs',
+    'password': 'aDjDgegIiTIkHZSbIbIkhIdSUaSeVGbN',
     'database': 'railway'
 }
 
