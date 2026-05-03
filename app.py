@@ -5,13 +5,14 @@ from mysql.connector import Error
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_super_segura'
 
-# ✅ CONEXIÓN CORREGIDA (RAILWAY)
+import os
+
 DB_CONFIG = {
-    'host': 'switchback.proxy.rlwy.net',
-    'port': 42048,
-    'user': 'root',
-    'password': 'aDjDgegIiTIkHZSbIbIkhIdSUaSeVGbN',
-    'database': 'railway'
+    'host': os.getenv('MYSQL_HOST'),
+    'port': int(os.getenv('MYSQL_PORT')),
+    'user': os.getenv('MYSQL_USER'),
+    'password': os.getenv('MYSQL_PASSWORD'),
+    'database': os.getenv('MYSQL_DATABASE')
 }
 
 def get_connection():
