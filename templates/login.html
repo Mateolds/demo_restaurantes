@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MesaYa – Login Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: radial-gradient(ellipse at 20% 50%, rgba(234,88,12,.15) 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 20%, rgba(234,179,8,.08) 0%, transparent 50%);
+        }
+        .login-box {
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,.07);
+            border-radius: 20px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.5);
+        }
+        .login-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .login-logo .icon { font-size: 2.5rem; }
+        .login-logo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #f8fafc;
+            margin-top: 8px;
+        }
+        .login-logo p { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+        label {
+            display: block;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            margin-top: 18px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0f172a;
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 10px;
+            color: #f8fafc;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            transition: border-color .2s;
+        }
+        input:focus { outline: none; border-color: #ea580c; }
+        button {
+            margin-top: 28px;
+            width: 100%;
+            padding: 14px;
+            background: #ea580c;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, transform .1s;
+        }
+        button:hover { background: #c2410c; transform: translateY(-1px); }
+        .alert {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            font-size: 14px;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover { color: #ea580c; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="login-logo">
+            <div class="icon">🍽️</div>
+            <h1>MesaYa</h1>
+            <p>Acceso al panel de administración</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/login">
+            <label>Usuario</label>
+            <input type="text" name="username" placeholder="admin" required autofocus>
+
+            <label>Contraseña</label>
+            <input type="password" name="password" placeholder="••••••" required>
+
+            <button type="submit">Ingresar al panel</button>
+        </form>
+
+        <a href="/" class="back-link">← Volver a la vista cliente</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,139 @@
+{% extends 'base_admin.html' %}
+{% block content %}
+
+<div style="padding:32px 0 20px;">
+    <h1 class="page-title">Panel Administrativo</h1>
+    <p class="page-sub">Gestiona restaurantes, ocupación y reservas.</p>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+    <button class="tab active" onclick="showTab('tab-restaurantes', this)">🏪 Restaurantes</button>
+    <button class="tab" onclick="showTab('tab-reservas', this)">📋 Reservas ({{ reservas|length }})</button>
+</div>
+
+<!-- ══ TAB RESTAURANTES ══════════════════════════════════════ -->
+<div id="tab-restaurantes" class="tab-content active">
+    <div class="admin-layout">
+
+        <!-- REGISTRAR -->
+        <div class="card">
+            <h2 class="card-title">➕ Registrar restaurante</h2>
+            <form action="{{ url_for('crear_restaurante') }}" method="post">
+                <label>Nombre</label>
+                <input type="text" name="nombre" placeholder="Ej: El Rancho" required>
+                <label>Ciudad</label>
+                <input type="text" name="ciudad" placeholder="Ej: Bogotá" required>
+                <label>Total de mesas</label>
+                <input type="number" name="total_mesas" min="1" required>
+                <label>Mesas ocupadas</label>
+                <input type="number" name="mesas_ocupadas" min="0" required>
+                <button type="submit">Guardar restaurante</button>
+            </form>
+        </div>
+
+        <!-- ACTUALIZAR -->
+        <div>
+            <h2 class="card-title" style="margin-bottom:16px;">🔄 Actualizar ocupación</h2>
+            <div class="grid one-column-gap">
+                {% for r in restaurantes %}
+                <div class="card">
+                    <div class="card-top">
+                        <div>
+                            <h3 class="restaurant-name">{{ r.nombre }}</h3>
+                            <p class="restaurant-city">📍 {{ r.ciudad }}</p>
+                        </div>
+                        {% set libre = r.total_mesas - r.mesas_ocupadas %}
+                        {% if libre <= 0 %}
+                            <span class="badge lleno">Lleno</span>
+                        {% elif (r.mesas_ocupadas / r.total_mesas) >= 0.75 %}
+                            <span class="badge pocas-mesas">Pocas mesas</span>
+                        {% else %}
+                            <span class="badge disponible">Disponible</span>
+                        {% endif %}
+                    </div>
+                    <p style="font-size:13px;color:#6b7280;margin:6px 0 12px;">
+                        {{ r.mesas_ocupadas }} / {{ r.total_mesas }} mesas ocupadas
+                    </p>
+                    <form action="{{ url_for('actualizar_restaurante', restaurante_id=r.id) }}" method="post">
+                        <label>Mesas ocupadas ahora</label>
+                        <input type="number" name="mesas_ocupadas" min="0"
+                               max="{{ r.total_mesas }}" value="{{ r.mesas_ocupadas }}" required>
+                        <button type="submit">Actualizar</button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="card"><p>No hay restaurantes aún.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══ TAB RESERVAS ══════════════════════════════════════════ -->
+<div id="tab-reservas" class="tab-content">
+    <h2 class="card-title" style="margin-bottom:20px;">📋 Reservas registradas</h2>
+
+    {% if reservas %}
+    <div class="table-wrap">
+        <table class="reservas-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Restaurante</th>
+                    <th>Fecha y hora</th>
+                    <th>Personas</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rv in reservas %}
+                <tr {% if rv.estado == 'cancelada' %}style="opacity:0.45;"{% endif %}>
+                    <td style="color:#9ca3af;">{{ rv.id }}</td>
+                    <td><strong>{{ rv.nombre_cliente }}</strong></td>
+                    <td>{{ rv.restaurante_nombre }}</td>
+                    <td>{{ rv.fecha_hora.strftime('%d/%m/%Y %H:%M') if rv.fecha_hora else '—' }}</td>
+                    <td style="text-align:center;">👥 {{ rv.personas }}</td>
+                    <td>
+                        {% if rv.estado == 'pendiente' %}
+                            <span class="badge disponible">Pendiente</span>
+                        {% else %}
+                            <span class="badge lleno">Cancelada</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if rv.estado == 'pendiente' %}
+                        <form action="{{ url_for('cancelar_reserva', reserva_id=rv.id) }}" method="post"
+                              onsubmit="return confirm('¿Cancelar esta reserva? La mesa quedará libre.')">
+                            <button type="submit" class="btn-cancel">Cancelar</button>
+                        </form>
+                        {% else %}
+                        <span style="color:#9ca3af;font-size:12px;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card" style="text-align:center; padding:48px 20px;">
+        <p style="font-size:2.5rem; margin:0;">📭</p>
+        <p style="color:#78716c; margin-top:12px;">No hay reservas todavía.<br>Aparecerán aquí cuando los clientes reserven desde la vista principal.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function showTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-text">
+        <p class="hero-label">🇨🇴 Restaurantes en Colombia</p>
+        <h1 class="hero-title">Encuentra tu mesa<br><span class="hero-accent">en segundos</span></h1>
+        <p class="hero-sub">Consulta disponibilidad en tiempo real y reserva sin llamadas ni filas.</p>
+        {% if session.get('cliente_id') %}
+            <a href="#restaurantes" class="btn-hero">Ver restaurantes →</a>
+        {% else %}
+            <a href="{{ url_for('login_cliente') }}" class="btn-hero">Iniciar sesión para reservar →</a>
+        {% endif %}
+    </div>
+    <div class="hero-stats">
+        <div class="stat-box">
+            <span class="stat-num">{{ restaurantes|length }}</span>
+            <span class="stat-lbl">Restaurantes</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-num">{{ restaurantes | selectattr('estado', 'equalto', 'Disponible') | list | length }}</span>
+            <span class="stat-lbl">Con mesas libres</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-num">⚡</span>
+            <span class="stat-lbl">Tiempo real</span>
+        </div>
+    </div>
+</section>
+
+<!-- RESTAURANTES -->
+<section id="restaurantes" style="margin-top:48px;">
+    <h2 class="section-title">Disponibilidad ahora</h2>
+
+    {% if not session.get('cliente_id') %}
+    <div class="alert-info">
+        👋 <a href="{{ url_for('login_cliente') }}" style="color:#1d4ed8;font-weight:600;">Inicia sesión</a>
+        o <a href="{{ url_for('registro') }}" style="color:#1d4ed8;font-weight:600;">regístrate</a>
+        para poder reservar una mesa.
+    </div>
+    {% endif %}
+
+    <div class="grid">
+        {% for r in restaurantes %}
+        <div class="card restaurant-card">
+            <div class="card-top">
+                <div>
+                    <h3 class="restaurant-name">{{ r.nombre }}</h3>
+                    <p class="restaurant-city">📍 {{ r.ciudad }}</p>
+                </div>
+                <span class="badge {{ r.estado|lower|replace(' ', '-') }}">{{ r.estado }}</span>
+            </div>
+
+            <div class="occupancy-bar-wrap">
+                <div class="occupancy-bar" style="width:{{ r.ocupacion }}%;
+                    background:{% if r.ocupacion >= 100 %}#dc2626{% elif r.ocupacion >= 75 %}#f59e0b{% else %}#16a34a{% endif %};"></div>
+            </div>
+            <p class="occ-label">{{ r.ocupacion }}% ocupado</p>
+
+            <div class="mesa-info">
+                <div class="mesa-item">
+                    <span class="mesa-num">{{ r.total_mesas }}</span>
+                    <span class="mesa-lbl">Total</span>
+                </div>
+                <div class="mesa-item">
+                    <span class="mesa-num text-red">{{ r.mesas_ocupadas }}</span>
+                    <span class="mesa-lbl">Ocupadas</span>
+                </div>
+                <div class="mesa-item">
+                    <span class="mesa-num text-green">{{ r.mesas_disponibles }}</span>
+                    <span class="mesa-lbl">Libres</span>
+                </div>
+            </div>
+
+            <p class="wait-time">⏱ Espera estimada: <strong>{{ r.tiempo_espera }}</strong></p>
+
+            {% if session.get('cliente_id') %}
+                {% if r.mesas_disponibles > 0 %}
+                <button type="button" class="btn-reservar"
+                        data-id="{{ r.id }}" data-nombre="{{ r.nombre }}"
+                        onclick="abrirModal(this)">Reservar mesa</button>
+                {% else %}
+                <button type="button" class="btn-reservar" disabled
+                        style="background:#d1d5db;cursor:not-allowed;">Sin disponibilidad</button>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('login_cliente') }}" class="btn-reservar"
+                   style="text-align:center;text-decoration:none;display:block;">
+                   Inicia sesión para reservar
+                </a>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="card"><p>No hay restaurantes registrados todavía.</p></div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- MODAL -->
+<div id="modal-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+     background:rgba(0,0,0,0.55);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:20px;padding:36px 32px;width:90%;max-width:460px;
+                position:relative;box-shadow:0 24px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;">
+
+        <button type="button" onclick="cerrarModal()"
+                style="position:absolute;top:14px;right:14px;background:#f0ece8;border:none;
+                       border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:15px;">✕</button>
+
+        <h2 style="font-family:'Playfair Display',serif;margin:0 0 4px;">🍽️ Reservar mesa</h2>
+        <p id="modal-nombre-restaurante" style="color:#78716c;font-size:14px;margin:0 0 6px;"></p>
+        <p style="color:#16a34a;font-size:13px;font-weight:600;margin:0 0 20px;">
+            Reservando como: {{ session.get('cliente_nombre', '') }}
+        </p>
+
+        <form method="POST" action="/reservar">
+            <input type="hidden" id="campo-restaurante-id" name="restaurante_id" value="0">
+
+            <label style="display:block;font-weight:600;font-size:13px;color:#44403c;margin:14px 0 6px;">
+                Fecha y hora
+            </label>
+            <input type="datetime-local" name="fecha_hora" required
+                   style="width:100%;padding:11px 14px;border:1px solid #e7e5e4;border-radius:10px;font-size:14px;">
+
+            <label style="display:block;font-weight:600;font-size:13px;color:#44403c;margin:14px 0 6px;">
+                Número de personas
+            </label>
+            <input type="number" name="personas" value="2" min="1" max="20" required
+                   style="width:100%;padding:11px 14px;border:1px solid #e7e5e4;border-radius:10px;font-size:14px;">
+
+            <button type="submit"
+                    style="margin-top:22px;width:100%;padding:14px;background:#ea580c;color:white;
+                           border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;
+                           font-family:'DM Sans',sans-serif;">
+                ✅ Confirmar reserva
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirModal(btn) {
+    document.getElementById('campo-restaurante-id').value           = btn.getAttribute('data-id');
+    document.getElementById('modal-nombre-restaurante').textContent = btn.getAttribute('data-nombre');
+    document.getElementById('modal-overlay').style.display          = 'flex';
+}
+function cerrarModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+}
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+});
+</script>
+
+{% endblock %}

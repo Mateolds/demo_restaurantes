@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MesaYa – Restaurantes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container nav">
+            <a href="{{ url_for('index') }}" class="brand">
+                <span class="brand-icon">🍽️</span>
+                <span class="brand-name">MesaYa</span>
+            </a>
+            <nav>
+                {% if session.get('cliente_id') %}
+                    <a href="{{ url_for('index') }}">Restaurantes</a>
+                    <a href="{{ url_for('mis_reservas') }}">Mis reservas</a>
+                    <a href="{{ url_for('logout_cliente') }}" class="nav-btn">Salir ({{ session['cliente_nombre'] }})</a>
+                {% else %}
+                    <a href="{{ url_for('index') }}">Restaurantes</a>
+                    <a href="{{ url_for('login_cliente') }}" class="nav-btn">Iniciar sesión</a>
+                    <a href="{{ url_for('registro') }}" class="nav-btn-outline">Registrarse</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">
+                        {% if category == 'success' %}✅{% else %}⚠️{% endif %}
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 MesaYa · Gestión inteligente de restaurantes · Colombia</p>
+        </div>
+    </footer>
+</body>
+</html>

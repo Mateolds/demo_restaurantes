@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="padding:36px 0 20px;">
+    <h1 class="page-title">Mis reservas</h1>
+    <p class="page-sub">Hola, <strong>{{ session['cliente_nombre'] }}</strong>. Aquí están todas tus reservas.</p>
+</div>
+
+<div style="margin-bottom:24px;">
+    <a href="{{ url_for('index') }}" class="btn-hero" style="text-decoration:none;">+ Nueva reserva</a>
+</div>
+
+{% if reservas %}
+<div class="table-wrap">
+    <table class="reservas-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Restaurante</th>
+                <th>Ciudad</th>
+                <th>Fecha y hora</th>
+                <th>Personas</th>
+                <th>Estado</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rv in reservas %}
+            <tr {% if rv.estado == 'cancelada' %}style="opacity:0.45;"{% endif %}>
+                <td style="color:#9ca3af;">{{ rv.id }}</td>
+                <td><strong>{{ rv.restaurante_nombre }}</strong></td>
+                <td>📍 {{ rv.ciudad }}</td>
+                <td>{{ rv.fecha_hora.strftime('%d/%m/%Y %H:%M') if rv.fecha_hora else '—' }}</td>
+                <td style="text-align:center;">👥 {{ rv.personas }}</td>
+                <td>
+                    {% if rv.estado == 'pendiente' %}
+                        <span class="badge disponible">Confirmada</span>
+                    {% else %}
+                        <span class="badge lleno">Cancelada</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if rv.estado == 'pendiente' %}
+                    <form action="{{ url_for('cancelar_mi_reserva', reserva_id=rv.id) }}" method="post"
+                          onsubmit="return confirm('¿Seguro que deseas cancelar esta reserva?')">
+                        <button type="submit" class="btn-cancel">Cancelar</button>
+                    </form>
+                    {% else %}
+                    <span style="color:#9ca3af;font-size:12px;">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+<div class="card" style="text-align:center;padding:60px 20px;">
+    <p style="font-size:3rem;margin:0;">🍽️</p>
+    <p style="font-size:1.1rem;font-weight:600;margin:16px 0 8px;">Todavía no tienes reservas</p>
+    <p style="color:#78716c;margin-bottom:24px;">Explora los restaurantes disponibles y reserva tu mesa.</p>
+    <a href="{{ url_for('index') }}" class="btn-hero" style="text-decoration:none;">Ver restaurantes</a>
+</div>
+{% endif %}
+
+{% endblock %}
