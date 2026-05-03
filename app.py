@@ -11,7 +11,7 @@ DB_CONFIG = {
     'port': 42048,
     'user': 'root',
     'password': 'SLFGZoiMCSwMtoUzgvnLFHneBRiEqfxs',
-    'database': 'railway'
+    'database': 'gestion_mesas'
 }
 
 def get_connection():
